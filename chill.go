@@ -6,6 +6,7 @@ chillson's Son type methods, like in the example below.
     import (
 	    "chillson"
 	    "encoding/json"
+	    "fmt"
     )
 
     var jsonData interface{}
@@ -14,14 +15,34 @@ chillson's Son type methods, like in the example below.
 
     // now you can use Son-type variable like this:
     strField, err := chill.GetStr("[gophers][0][name]")
+    fmt.Println(strField)
     intField, err := chill.GetInt("[gophers][0][weight]")
+    fmt.Println(intField)
 
-    // you can also spawn more specific Son{}'s to save some type assertions:
+    // you can also spawn "smaller" Son{}'s to avoid some underlying type assertions:
     gophersTable, err := chill.GetArr("[gophers]")
     for i := 0; i < len(gophersTable); i++ {
 	    gophersRow := chillson.Son{gophersTable[i]}
 	    strField, err = chill.GetStr("[name]")
+            fmt.Println(strField)
 	    intField, err = chill.GetInt("[weight]")
+            fmt.Println(intField)
+    }
+
+    // testing for specific error values, if you happen to need them:
+    switch err {
+    case nil:
+        break
+    case InvalidPath:     // "Chillson: cannot parse nonempty value path, did you forget about square brackets?"
+        ...
+    case OutOfRange:      // "Chillson: value's parent seems to be a JSON array, but the index is out of range."
+        ...
+    case ParentNotObject: // "Chillson: value's parent is neither JSON object nor array."
+        ...
+    case FieldNotFound:    // "Chillson: value's parent seems to be a JSON object, but the field cannot be found."
+        ...
+    case BadValueType:    // "Chillson: retrieved value cannot be converted to the requested type."
+        ...
     }
 
 Chillson is MIT-licensed (see LICENSE). Pull requests, general suggestions (also regarding quality of documentation) and filing issues
@@ -30,12 +51,36 @@ are welcome.
 package chillson
 
 import (
-	"errors"
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
 )
+
+type chillsonErr int
+
+const (
+	InvalidPath chillsonErr = iota
+	OutOfRange
+	ParentNotObject
+	FieldNotFound
+	BadValueType
+)
+
+func (err chillsonErr) Error() string {
+	switch err {
+	case InvalidPath:
+		return "Chillson: cannot parse nonempty value path, did you forget about square brackets?"
+	case OutOfRange:
+		return "Chillson: value's parent seems to be a JSON array, but the index is out of range."
+	case ParentNotObject:
+		return "Chillson: value's parent is neither JSON object nor array."
+	case FieldNotFound:
+		return "Chillson: value's parent seems to be a JSON object, but the field cannot be found."
+	case BadValueType:
+		return "Chillson: retrieved value cannot be converted to the requested type."
+	}
+	return "Undefined Chillson error."
+}
 
 /* Son wraps an unmarshaled JSON document.*/
 type Son struct {
@@ -49,7 +94,7 @@ func (c *Son) Get(path string) (*(interface{}), error) {
 	format := regexp.MustCompile("(?:\\[([^\\[\\]]+)\\])+?")
 	matches := format.FindAllString(path, -1)
 	if len(matches) == 0 && len(path) != 0 {
-		return nil, errors.New(fmt.Sprintf("No indices recognized in %s, did you forget about square brackets?", path))
+		return nil, InvalidPath
 	}
 	var currLeaf *(interface{}) = &(*c).Data
 	for _, label := range matches {
@@ -62,17 +107,17 @@ func (c *Son) Get(path string) (*(interface{}), error) {
 					currLeaf = &(leafArr[numIndex])
 					continue
 				}
-				return nil, errors.New(fmt.Sprintf("Chillson: %s is out of range of array %v", label, currLeaf))
+				return nil, OutOfRange
 			}
 			// If leaf isn't an array, try to parse it as JSON object...
 		}
 		leafObj, ok := (*currLeaf).(map[string]interface{})
 		if !ok {
-			return nil, errors.New(fmt.Sprintf("Chillson: %v (parent node of %s) cannot be parsed as JSON object.", currLeaf, label))
+			return nil, ParentNotObject
 		}
 		val, ok := leafObj[label]
 		if !ok {
-			return nil, errors.New(fmt.Sprintf("Chillson: parent object %v doesn't contain entry labeled as %s", currLeaf, label))
+			return nil, FieldNotFound
 		}
 		currLeaf = &val
 	}
@@ -86,7 +131,7 @@ func (c *Son) GetArr(path string) ([]interface{}, error) {
 	}
 	arr, ok := (*val).([]interface{})
 	if !ok {
-		return nil, errors.New(fmt.Sprintf("Son: value cannot be converted to a []interface{}: %v", val))
+		return nil, BadValueType
 	}
 	return arr, nil
 }
@@ -98,7 +143,7 @@ func (c *Son) GetFloat(path string) (float64, error) {
 	}
 	num, ok := (*val).(float64)
 	if !ok {
-		return -1, errors.New(fmt.Sprintf("Son: value cannot be converted to a float64: %v", val))
+		return -1, BadValueType
 	}
 	return num, nil
 }
@@ -118,7 +163,7 @@ func (c *Son) GetStr(path string) (string, error) {
 	}
 	str, ok := (*val).(string)
 	if !ok {
-		return "", errors.New(fmt.Sprintf("Son: value cannot be converted to a string: %v", val))
+		return "", BadValueType
 	}
 	return str, nil
 }
@@ -130,7 +175,7 @@ func (c *Son) GetObj(path string) (map[string]interface{}, error) {
 	}
 	obj, ok := (*val).(map[string]interface{})
 	if !ok {
-		return nil, errors.New(fmt.Sprintf("Son: value cannot be converted to a map[string]interface{}: %v", val))
+		return nil, BadValueType
 	}
 	return obj, nil
 }
