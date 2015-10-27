@@ -88,9 +88,9 @@ type Son struct {
 }
 
 /* Get() returns value from given location in Son data. Object keys and array indices should be both enclosed in
-[square brackets], WITHOUT "quotation marks". String indices (object keys) can be arbitrary, but they shouldn't
-contain square brackets ([, ]). */
-func (c *Son) Get(path string) (*(interface{}), error) {
+[square brackets], WITHOUT "quotation marks". String indices (= object keys) can be arbitrary JSON strings as in
+JSON source, but they shouldn't contain square brackets [ ]. */
+func (c *Son) Get(path string) (interface{}, error) {
 	format := regexp.MustCompile("(?:\\[([^\\[\\]]+)\\])+?")
 	matches := format.FindAllString(path, -1)
 	if len(matches) == 0 && len(path) != 0 {
@@ -121,7 +121,7 @@ func (c *Son) Get(path string) (*(interface{}), error) {
 		}
 		currLeaf = &val
 	}
-	return currLeaf, nil
+	return *currLeaf, nil
 }
 
 func (c *Son) GetArr(path string) ([]interface{}, error) {
@@ -129,7 +129,7 @@ func (c *Son) GetArr(path string) ([]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	arr, ok := (*val).([]interface{})
+	arr, ok := val.([]interface{})
 	if !ok {
 		return nil, BadValueType
 	}
@@ -141,7 +141,7 @@ func (c *Son) GetFloat(path string) (float64, error) {
 	if err != nil {
 		return -1, err
 	}
-	num, ok := (*val).(float64)
+	num, ok := val.(float64)
 	if !ok {
 		return -1, BadValueType
 	}
@@ -161,7 +161,7 @@ func (c *Son) GetStr(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	str, ok := (*val).(string)
+	str, ok := val.(string)
 	if !ok {
 		return "", BadValueType
 	}
@@ -173,7 +173,7 @@ func (c *Son) GetObj(path string) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	obj, ok := (*val).(map[string]interface{})
+	obj, ok := val.(map[string]interface{})
 	if !ok {
 		return nil, BadValueType
 	}
