@@ -1,3 +1,32 @@
+/*
+Chillson package is a convenience tool, providing way to process unmarshaled JSON data in schema-agnostic way. Thus you don't have to
+specify type structure conforming to the expected JSON structure, or write countless Golang type assertions. The latter is automated by
+chillson's Son type methods, like in the example below.
+
+    import (
+	    "chillson"
+	    "encoding/json"
+    )
+
+    var jsonData interface{}
+    json.Unmarshal([]byte(rawJson), &jsonData)
+    chill := chillson.Son{jsonData}
+
+    // now you can use Son-type variable like this:
+    strField, err := chill.GetStr("[gophers][0][name]")
+    intField, err := chill.GetInt("[gophers][0][weight]")
+
+    // you can also spawn more specific Son{}'s to save some type assertions:
+    gophersTable, err := chill.GetArr("[gophers]")
+    for i := 0; i < len(gophersTable); i++ {
+	    gophersRow := chillson.Son{gophersTable[i]}
+	    strField, err = chill.GetStr("[name]")
+	    intField, err = chill.GetInt("[weight]")
+    }
+
+Chillson is MIT-licensed (see LICENSE). Pull requests, general suggestions (also regarding quality of documentation) and filing issues
+are welcome.
+*/
 package chillson
 
 import (
@@ -8,13 +37,14 @@ import (
 	"strings"
 )
 
+/* Son wraps an unmarshaled JSON document.*/
 type Son struct {
 	Data (interface{})
 }
 
 /* Get() returns value from given location in Son data. Object keys and array indices should be both enclosed in
 [square brackets], WITHOUT "quotation marks". String indices (object keys) can be arbitrary, but they shouldn't
-contain square brackets. */
+contain square brackets ([, ]). */
 func (c *Son) Get(path string) (*(interface{}), error) {
 	format := regexp.MustCompile("(?:\\[([^\\[\\]]+)\\])+?")
 	matches := format.FindAllString(path, -1)
