@@ -43,6 +43,8 @@ chillson's Son type methods, like in the example below.
         ...
     case BadValueType:    // "Chillson: retrieved value cannot be converted to the requested type."
         ...
+    case NullLeaf:        // "Chillson: null leaf encountered in the structure"
+        ...
     }
 
 Chillson is MIT-licensed (see LICENSE). Pull requests, general suggestions (also regarding quality of documentation) and filing issues
@@ -64,6 +66,7 @@ const (
 	ParentNotObject
 	FieldNotFound
 	BadValueType
+	NullLeaf
 )
 
 func (err chillsonErr) Error() string {
@@ -78,6 +81,8 @@ func (err chillsonErr) Error() string {
 		return "Chillson: value's parent seems to be a JSON object, but the field cannot be found."
 	case BadValueType:
 		return "Chillson: retrieved value cannot be converted to the requested type."
+	case NullLeaf:
+		return "Chillson: null leaf encountered in the structure"
 	}
 	return "Undefined Chillson error."
 }
@@ -98,6 +103,9 @@ func (c *Son) Get(path string) (interface{}, error) {
 	}
 	var currLeaf *(interface{}) = &(*c).Data
 	for _, label := range matches {
+		if currLeaf == nil {
+			return nil, NullLeaf
+		}
 		label = strings.Trim(label, "[]")
 		// If label is parse'able to integer, try to convert the parent to JSON array (= go slice).
 		if numIndex, err := strconv.Atoi(label); err == nil {
