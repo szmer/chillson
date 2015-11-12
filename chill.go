@@ -187,3 +187,51 @@ func (c *Son) GetObj(path string) (map[string]interface{}, error) {
 	}
 	return obj, nil
 }
+
+func (c *Son) Require(path string) interface{} {
+	ret, err := c.Get(path)
+	if err != nil {
+		panic(err.Error())
+	}
+	return ret
+}
+
+func (c *Son) RequireArr(path string) []interface{} {
+	ret, err := c.GetArr(path)
+	if err != nil {
+		panic(err.Error())
+	}
+	return ret
+}
+
+func (c *Son) RequireFloat(path string) float64 {
+	ret, err := c.GetFloat(path)
+	if err != nil {
+		panic(err.Error())
+	}
+	return ret
+}
+
+func (c *Son) RequireInt(path string) int {
+	ret, err := c.GetInt(path)
+	if err != nil {
+		panic(err.Error())
+	}
+	return ret
+}
+
+func (c *Son) RequireObj(path string) map[string]interface{} {
+	ret, err := c.GetObj(path)
+	if err != nil {
+		panic(err.Error())
+	}
+	return ret
+}
+
+func (c *Son) RequireStr(path string) string {
+	ret, err := c.GetStr(path)
+	if err != nil {
+		panic(err.Error())
+	}
+	return ret
+}
