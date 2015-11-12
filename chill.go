@@ -144,6 +144,18 @@ func (c *Son) GetArr(path string) ([]interface{}, error) {
 	return arr, nil
 }
 
+func (c *Son) GetBool(path string) (bool, error) {
+	val, err := (*c).Get(path)
+	if err != nil {
+		return false, err
+	}
+	truth, ok := val.(bool)
+	if !ok {
+		return false, BadValueType
+	}
+	return truth, nil
+}
+
 func (c *Son) GetFloat(path string) (float64, error) {
 	val, err := (*c).Get(path)
 	if err != nil {
@@ -198,6 +210,14 @@ func (c *Son) Require(path string) interface{} {
 
 func (c *Son) RequireArr(path string) []interface{} {
 	ret, err := c.GetArr(path)
+	if err != nil {
+		panic(err.Error())
+	}
+	return ret
+}
+
+func (c *Son) RequireBool(path string) bool {
+	ret, err := c.GetBool(path)
 	if err != nil {
 		panic(err.Error())
 	}
