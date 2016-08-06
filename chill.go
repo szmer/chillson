@@ -10,7 +10,7 @@ chillson's Son type methods, like in the example below.
     )
 
     var jsonData interface{}
-    json.Unmarshal([]byte(rawJson), &jsonData)
+    json.Unmarshal([]byte(rawJson), &jsonData) // refer to the enconding/json docs
     chill := chillson.Son{jsonData}
 
     // now you can use Son-type variable like this:
@@ -19,7 +19,7 @@ chillson's Son type methods, like in the example below.
     intField, err := chill.GetInt("[gophers][0][weight]")
     fmt.Println(intField)
 
-    // you can also spawn "smaller" Son{}'s to avoid some underlying type assertions:
+    // you can also spawn "lesser" Son{}'s to avoid some underlying type assertions:
     gophersTable, err := chill.GetArr("[gophers]")
     for i := 0; i < len(gophersTable); i++ {
 	    gophersRow := chillson.Son{gophersTable[i]}
@@ -47,8 +47,7 @@ chillson's Son type methods, like in the example below.
         ...
     }
 
-Chillson is MIT-licensed (see LICENSE). Pull requests, general suggestions (also regarding quality of documentation) and filing issues
-are welcome.
+Chillson is MIT-licensed (see LICENSE).
 */
 package chillson
 
@@ -132,6 +131,7 @@ func (c *Son) Get(path string) (interface{}, error) {
 	return *currLeaf, nil
 }
 
+/*GetArr returns a JSON array as Golang slice.*/
 func (c *Son) GetArr(path string) ([]interface{}, error) {
 	val, err := (*c).Get(path)
 	if err != nil {
@@ -156,6 +156,7 @@ func (c *Son) GetBool(path string) (bool, error) {
 	return truth, nil
 }
 
+/*GetFloat returns JSON number as Golang float64.*/
 func (c *Son) GetFloat(path string) (float64, error) {
 	val, err := (*c).Get(path)
 	if err != nil {
