@@ -80,7 +80,7 @@ Son wraps an unmarshaled JSON document.
 func (c *Son) Get(path string) (interface{}, error)
 ```
 
-    Get() returns value from given location in Son data. Object keys and array indices should be both enclosed in
+Get() returns value from given location in Son data. Object keys and array indices should be both enclosed in
 [square brackets], WITHOUT "quotation marks". String indices (= object keys) can
 be arbitrary JSON strings as in JSON source, but they shouldn't contain square
 brackets [ ].
@@ -99,7 +99,7 @@ func (c *Son) GetArr(path string) ([]interface{}, error)
 func (c *Son) GetFloat(path string) (float64, error)
 ```
 
-    GetFloat returns JSON number as Golang float64.
+GetFloat returns JSON number as Golang float64.
 
 #### func (*Son) GetInt
 
