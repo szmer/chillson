@@ -50,8 +50,7 @@ example below.
             ...
         }
 
-Chillson is MIT-licensed (see LICENSE). Pull requests, general suggestions (also
-regarding quality of documentation) and filing issues are welcome.
+Chillson is MIT-licensed (see LICENSE).
 
 ## Usage
 
@@ -92,11 +91,15 @@ brackets [ ].
 func (c *Son) GetArr(path string) ([]interface{}, error)
 ```
 
+    GetArr returns a JSON array as Golang slice.
+
 #### func (*Son) GetFloat
 
 ```go
 func (c *Son) GetFloat(path string) (float64, error)
 ```
+
+    GetFloat returns JSON number as Golang float64.
 
 #### func (*Son) GetInt
 
